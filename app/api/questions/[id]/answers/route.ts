@@ -37,9 +37,12 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const user = getUserFromRequest(req);
+
   if (!user) {
     return NextResponse.json(
       { error: "Login required to answer" },
@@ -47,7 +50,7 @@ export async function POST(
     );
   }
 
-  const questionId = parseInt(params.id);
+  const questionId = parseInt(id);
   if (isNaN(questionId)) {
     return NextResponse.json({ error: "Invalid question ID" }, { status: 400 });
   }
