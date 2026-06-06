@@ -7,51 +7,17 @@ const answerSchema = z.object({
   body: z.string().min(10),
 });
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  const questionId = parseInt(id);
-  if (isNaN(questionId)) {
-    return NextResponse.json({ error: "Invalid question ID" }, { status: 400 });
-  }
-
-  const question = await prisma.question.findUnique({
-    where: { id: questionId },
-    include: {
-      user:    { select: { name: true } },
-      college: { select: { name: true } },
-      answers: {
-        orderBy: [{ isAccepted: "desc" }, { createdAt: "asc" }],
-        include: { user: { select: { name: true } } },
-      },
-    },
-  });
-
-  if (!question) {
-    return NextResponse.json({ error: "Question not found" }, { status: 404 });
-  }
-
-  return NextResponse.json({ data: question });
-}
-
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-
   const user = getUserFromRequest(req);
-
   if (!user) {
-    return NextResponse.json(
-      { error: "Login required to answer" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Login required to answer" }, { status: 401 });
   }
 
-  const questionId = parseInt(id);
+  const { id: rawId } = await params;
+  const questionId = parseInt(rawId);
   if (isNaN(questionId)) {
     return NextResponse.json({ error: "Invalid question ID" }, { status: 400 });
   }
