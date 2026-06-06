@@ -1,23 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+
+type Props = { params: Promise<{ id: string }> };
 
 const answerSchema = z.object({
   body: z.string().min(10),
 });
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, props: Props) {
   const user = getUserFromRequest(req);
   if (!user) {
-    return NextResponse.json({ error: "Login required to answer" }, { status: 401 });
+    return NextResponse.json({ error: "Login required" }, { status: 401 });
   }
 
-  const { id: rawId } = await params;
-  const questionId = parseInt(rawId);
+  const params = await props.params;
+  const questionId = parseInt(params.id);
+
   if (isNaN(questionId)) {
     return NextResponse.json({ error: "Invalid question ID" }, { status: 400 });
   }
