@@ -9,9 +9,10 @@ const answerSchema = z.object({
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const questionId = parseInt(params.id);
+  const { id } = await params;
+  const questionId = parseInt(id);
   if (isNaN(questionId)) {
     return NextResponse.json({ error: "Invalid question ID" }, { status: 400 });
   }
